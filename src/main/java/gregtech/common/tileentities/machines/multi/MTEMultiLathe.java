@@ -243,7 +243,7 @@ public class MTEMultiLathe extends MTEExtendedPowerMultiBlockBase<MTEMultiLathe>
             .addInfo(BLUE + "Allows more parallel recipes based on item pipe casing parallel and voltage.")
             .addInfo("Max Parallel Recipes = Item Pipe Casing Parallel + (Voltage Tier * 2).")
             .addInfo(BLUE + "Increases processing speed based on item pipe casing speed and voltage.")
-            .addInfo("Time Reduction = 1 / (Item Pipe Casing Speed Boost + Voltage Tier / 4).")
+            .addInfo("Time Reduction = 1 / ((Item Pipe Casing Speed Boost + Voltage Tier) / 4).")
             .addInfo("Speed Increase = (100 / Time Reduction).")
             .addInfo(
                 DARK_AQUA
