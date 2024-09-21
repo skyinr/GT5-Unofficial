@@ -77,6 +77,7 @@ public class MTEMultiLathe extends MTEExtendedPowerMultiBlockBase<MTEMultiLathe>
     private static final String STRUCTURE_PIECE_BODY_ALT = "body_alt";
 
     protected int pipeTier = 0;
+    private double speedBonus = 1;
 
     public enum PipeTiers {
 
@@ -300,24 +301,28 @@ public class MTEMultiLathe extends MTEExtendedPowerMultiBlockBase<MTEMultiLathe>
         pipeTier = -2;
         mEnergyHatches.clear();
         mCasingAmount = 0;
-        if (!checkPiece(STRUCTURE_PIECE_MAIN, 3, 4, 0)) return false;
-        getBaseMetaTileEntity().sendBlockEvent(GregTechTileClientEvents.CHANGE_CUSTOM_DATA, getUpdateData());
-        if (!checkPiece(STRUCTURE_PIECE_BODY, 3, 4, -1) && !checkPiece(STRUCTURE_PIECE_BODY_ALT, 3, 4, -1))
+        speedBonus = 1;
+        if (!checkPiece(STRUCTURE_PIECE_MAIN, 3, 4, 0)) {
             return false;
+        }
+        getBaseMetaTileEntity().sendBlockEvent(GregTechTileClientEvents.CHANGE_CUSTOM_DATA, getUpdateData());
+        if (!checkPiece(STRUCTURE_PIECE_BODY, 3, 4, -1) && !checkPiece(STRUCTURE_PIECE_BODY_ALT, 3, 4, -1)) {
+            return false;
+        }
+        calculateSpeedBonus(getPipeData().speedBoost, GTUtility.getTier(this.getMaxInputVoltage()));
         return this.mMaintenanceHatches.size() == 1 && pipeTier > 0
             && mEnergyHatches.size() >= 1
             && mCasingAmount >= 42
             && mMufflerHatches.size() == 1;
     }
 
-    public float speedBoost(float speedBoost, byte voltageTier) {
-        return 1F / ((speedBoost + voltageTier) / 4F);
+    public void calculateSpeedBonus(float speedBoost, byte voltageTier) {
+        speedBonus = 1F / ((speedBoost + voltageTier) / 4F);
     }
 
     @Override
     protected ProcessingLogic createProcessingLogic() {
-        return new ProcessingLogic()
-            .setSpeedBonus(speedBoost(getPipeData().speedBoost, GTUtility.getTier(this.getMaxInputVoltage())))
+        return new ProcessingLogic().setSpeedBonus(speedBonus)
             .setEuModifier(0.8F)
             .setMaxParallelSupplier(this::getMaxParallelRecipes);
     }
@@ -331,7 +336,7 @@ public class MTEMultiLathe extends MTEExtendedPowerMultiBlockBase<MTEMultiLathe>
         int z) {
         super.getWailaNBTData(player, tile, tag, world, x, y, z);
         tag.setInteger("itemPipeTier", Math.max(0, pipeTier));
-        tag.setFloat("speedBonus", getPipeData().speedBoost);
+        tag.setDouble("speedBonus", speedBonus);
         tag.setFloat("getMaxParallelRecipes", Math.max(0, getMaxParallelRecipes()));
         tag.setByte("voltageTier", GTUtility.getTier(this.getMaxInputVoltage()));
     }
@@ -354,7 +359,7 @@ public class MTEMultiLathe extends MTEExtendedPowerMultiBlockBase<MTEMultiLathe>
         currenttip.add(
             StatCollector.translateToLocal("GT5U.multiblock.speed") + ": "
                 + EnumChatFormatting.WHITE
-                + dfNone.format(Math.max(0, 100 / speedBoost(tag.getFloat("speedBonus"), tag.getByte("voltageTier"))))
+                + dfNone.format(Math.max(0, 100 / tag.getDouble("speedBonus")))
                 + "%");
     }
 
